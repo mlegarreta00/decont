@@ -15,4 +15,4 @@ sample_id="$3"
 
 mkdir -p "$output_directory"
 
-cat "$samples_directory"/"$sample_id" > "$output_directory/merged_sample_${sample_id}.txt"
+cat "$samples_directory"/"$sample_id" > "$output_directory/${sample_id}.fastq.gz"
