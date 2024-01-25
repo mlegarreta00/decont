@@ -1,5 +1,7 @@
+#!/bin/bash
+
 #Download all the files specified in data/filenames
-for url in $(<data/urls/list_of_urls>) #TODO
+for url in $(<data/urls) #TODO
 do
     bash scripts/download.sh $url data
 done
@@ -9,15 +11,17 @@ done
 bash scripts/download.sh https://bioinformatics.cnio.es/data/courses/decont/contaminants.fasta.gz res yes #TODO
 
 # Index the contaminants file
-bash scripts/index.sh res/filtered_contaminants.fasta res/filtered_contaminants_idx
+bash scripts/index.sh res/contaminants.fasta res/contaminants_idx
 
 # Merge the samples into a single file
-for sid in $(basename -s .fastq.gz -a data/*.fastq.gz | sort -u) #TODO
+for sid in $(ls data/*fastq.gz | sed 's/.\///' | cut -d '.' -f1 | sort -u); #TODO
 do
     bash scripts/merge_fastqs.sh data out/merged $sid
 done
 
 # TODO: run cutadapt for all merged files
+
+
 for infile in out/merged/*.fastq.gz
 do
 sid=$(basename "$infile".fastq.gz)
