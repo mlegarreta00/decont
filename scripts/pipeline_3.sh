@@ -1,25 +1,28 @@
 #!/bin/bash
 
-# Descargar todos los archivos especificados en data/urls
-for url in $(<data/urls)
+# Download all the files specified in data/filenames
+for url in $(<data/urls) #TODO
 do
     bash scripts/download.sh "$url" data
 done
 
 
-# Descargar el archivo fasta de contaminantes, descomprimirlo y
-# filtrar para eliminar todos los ARN nucleares pequeños
+# Download the contaminants fasta file, uncompress it, and
+# filter to remove all small nuclear RNAs
 contaminants_url="https://bioinformatics.cnio.es/data/courses/decont/contaminants.fasta.gz"
-bash scripts/download.sh "$contaminants_url" res yes
-# TODO: Agregar código para filtrar ARN nucleares pequeños si es necesario
+bash scripts/download.sh "$contaminants_url" res yes #TODO
 
-# Indexar el archivo de contaminantes
+# Index the contaminants file
 bash scripts/index.sh res/contaminants.fasta res/contaminants_idx
 
-# Fusionar todas las muestras en un solo archivo
-for fastq_file in data/*.fastq.gz; do
-    sid=$(basename "$fastq_file" .fastq.gz)
-    bash scripts/merge_fastqs.sh data out/merged "$sid"
+# Merge the samples into a single file
+for filepath in data/*fastq.gz; do
+	# Obtén el nombre del archivo sin la ruta ni la extensión
+	filename=$(basename "$filepath")
+	# Utiliza sed para realizar la transformación del nombre del archivo
+	sample_id=$(echo "$filename" | sed -E 's/-12\.5dpp\.1\.[12]s_sRNA.*//;s/\..*//')
+	# Ejecuta el script de fusión
+	bash scripts/merge_fastqs.sh data out/merged "$sample_id"
 done
 
 # Ejecutar cutadapt para todos los archivos fusionados
