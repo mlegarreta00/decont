@@ -16,8 +16,7 @@ bash scripts/download.sh "$contaminants_url" res yes
 # Index the contaminants file
 bash scripts/index.sh res/contaminants.fasta res/contaminants_idx
 
-# Get sample IDs from the filenames in data directory
-list_of_sample_ids=$(ls -1 data/*.fastq.gz | grep -E "/[A-Z][^\]*$" | xargs -I {} basename {} | cut -d"-" -f1| sort | uniq)
+list_of_sample_ids=$(ls -1 data/*.fastq.gz | grep -E "/[A-Z][^\]*$" | xargs -I {} basename {} | cut -d"-" -f1 | uniq)
 
 # Merge the samples into a single file
 for sid in $list_of_sample_ids; do
