@@ -1,32 +1,32 @@
 #!/bin/bash
 
 # Download all the files specified in data/urls
-for url in $(<data/urls) #TODO
+for url in $(<data/urls)
 do
+    echo "Downloading: $url"
     bash scripts/download.sh "$url" data
 done
 
 # Download the contaminants fasta file, uncompress it, and
 # filter to remove all small nuclear RNAs
 contaminants_url="https://bioinformatics.cnio.es/data/courses/decont/contaminants.fasta.gz"
-bash scripts/download.sh "$contaminants_url" res yes #TODO
+echo "Downloading contaminants file: $contaminants_url"
+bash scripts/download.sh "$contaminants_url" res yes
 
 # Index the contaminants file
 bash scripts/index.sh res/contaminants.fasta res/contaminants_idx
 
+# Get sample IDs from the filenames in data directory
+list_of_sample_ids=$(ls -1 data/*.fastq.gz | grep -E "/[A-Z][^\]*$" | xargs -I {} basename {} | cut -d"-" -f1| sort | uniq)
+
 # Merge the samples into a single file
-for filepath in data/*fastq.gz; do
-    # Obtain the filename without path and extension
-    filename=$(basename "$filepath")
-    # Use sed to transform the filename
-    sample_id=$(echo "$filename" | sed -E 's/-12\.5dpp\.1\.[12]s_sRNA.*//;s/\..*//')
-    # Execute the merge script
-    bash scripts/merge_fastqs.sh data out/merged "$sample_id"
+for sid in $list_of_sample_ids; do
+    bash scripts/merge_fastqs.sh data out/merged "$sid"
 done
 
 # Execute cutadapt for all merged files
 log_file="log/pipeline.log"
-mkdir -p log/cutadapt  # Create log/cutadapt directory if it doesn't exist
+mkdir -p log/cutadapt
 mkdir -p out/trimmed
 for merged_file in out/merged/*.fastq.gz; do
     trimmed_file="out/trimmed/$(basename "$merged_file" .fastq.gz).trimmed.fastq.gz"
@@ -55,4 +55,3 @@ done
 
 # Clean up temporary log files
 rm temp_star.log
-
